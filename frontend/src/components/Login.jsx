@@ -17,7 +17,7 @@ const Login = () => {
   useEffect(() => {
     let active = true
     axios.get(`${API_URL}/auth/status`, { timeout: 10000 })
-      .then(response => { if (active) setAccessState(response.data.blocked ? 'blocked' : 'ready') })
+      .then(() => { if (active) setAccessState('ready') })
       .catch(() => { if (active) setAccessState('unavailable') })
     return () => { active = false }
   }, [checkAgain])
@@ -32,7 +32,6 @@ const Login = () => {
       navigate('/dashboard')
     } catch (requestError) {
       setError(requestError.response?.data?.error || 'Unable to sign in. Check your details and try again.')
-      if (requestError.response?.data?.blocked) setAccessState('blocked')
     } finally {
       setIsSubmitting(false)
     }
@@ -44,11 +43,9 @@ const Login = () => {
       <section className="login-card" aria-labelledby="login-title">
         <div className="login-mark" aria-hidden="true"><i className="bx bx-shield-quarter" /></div>
         <p className="login-eyebrow">Private workspace</p>
-        <h1 id="login-title">{accessState === 'blocked' ? 'Sign-in unavailable' : accessState === 'unavailable' ? 'Security check unavailable' : 'Welcome back'}</h1>
+        <h1 id="login-title">{accessState === 'unavailable' ? 'Security check unavailable' : 'Welcome back'}</h1>
         <p className="login-description">
-          {accessState === 'blocked'
-            ? 'This network is blocked after repeated incorrect sign-in attempts. Ask the site owner to remove it from the admin block list.'
-            : accessState === 'unavailable'
+          {accessState === 'unavailable'
               ? 'We could not verify this network right now. Check that the server and database are available, then try again.'
               : 'Sign in to manage your portfolio and Knowledge Hub.'}
         </p>

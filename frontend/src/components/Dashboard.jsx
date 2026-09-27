@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Navbar from './Navbar'
-import BlockedIpManager from './BlockedIpManager'
+import AdminSessionsManager from './AdminSessionsManager'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -47,6 +47,17 @@ const Dashboard = () => {
   const getAuthHeaders = () => ({
     headers: { Authorization: `Bearer ${token}` }
   })
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_URL}/auth/logout`, {}, getAuthHeaders())
+    } catch (err) {
+      console.error('Unable to revoke the current session:', err)
+    } finally {
+      localStorage.removeItem('adminToken')
+      navigate('/login')
+    }
+  }
 
   // --- DELETE LOGIC ---
   const [manageSubjectId, setManageSubjectId] = useState('')
@@ -171,13 +182,10 @@ const Dashboard = () => {
         <section className="section bd-grid">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 className="section-title" style={{ margin: 0 }}>Admin Dashboard</h2>
-            <button 
-              className="button" 
+            <button
+              className="button"
               style={{ padding: '0.5rem 1rem' }}
-              onClick={() => {
-                localStorage.removeItem('adminToken')
-                navigate('/login')
-              }}
+              onClick={handleLogout}
             >
               Logout
             </button>
@@ -349,7 +357,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <BlockedIpManager />
+          <AdminSessionsManager />
         </section>
       </main>
     </>

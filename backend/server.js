@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // Set TRUST_PROXY_HOPS to the number of trusted reverse proxies in production.
-const trustedProxyHops = Number.parseInt(process.env.TRUST_PROXY_HOPS || '0', 10);
+const trustedProxyHops = Number.parseInt(process.env.TRUST_PROXY_HOPS || (process.env.NODE_ENV === 'production' ? '1' : '0'), 10);
 if (trustedProxyHops > 0) app.set('trust proxy', trustedProxyHops);
 
 // Serve static files for PDF uploads
