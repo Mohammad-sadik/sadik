@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react'
 import { motion } from 'framer-motion'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -14,7 +15,7 @@ const Contact = () => {
     setIsSubmitting(true)
     setStatus('Sending...')
     try {
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch(`${API_URL}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
