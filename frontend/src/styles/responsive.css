@@ -1,0 +1,231 @@
+﻿/* FULLY RESPONSIVE FIXES FOR ALL BREAKPOINTS */
+
+/* 1. Reset overflow on HTML/Body */
+html, body {
+  overflow-x: hidden; /* Prevent horizontal scroll only at the root level */
+  width: 100%;
+}
+
+/* 2. Responsive Container & Typography */
+.bd-grid {
+  width: min(100% - 2rem, 1200px);
+  margin-inline: auto;
+  max-width: 100%;
+}
+
+.section {
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(1.5rem, 5vw, 3rem);
+}
+
+.section-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  text-align: center;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+/* 3. Navbar Responsive */
+@media screen and (max-width: 767px) {
+  .nav__menu {
+    width: 85%;
+    max-width: 320px;
+    padding: 2rem 1rem;
+  }
+}
+
+/* 4. Home Section Responsive */
+.home {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2rem;
+}
+.home__data {
+  text-align: center;
+  align-items: center;
+}
+.home__title {
+  font-size: clamp(2rem, 8vw, 4.5rem) !important;
+  line-height: 1.2 !important;
+}
+.home__social {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.home__img {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.home__blob {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+}
+.home__stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)) !important;
+}
+
+@media screen and (min-width: 768px) {
+  .home {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .home__data {
+    flex: 1 1 50%;
+    text-align: left;
+    align-items: flex-start !important;
+  }
+  .home__social {
+    justify-content: flex-start;
+  }
+  .home__img {
+    flex: 1 1 40%;
+  }
+}
+
+/* 5. About Section Responsive */
+.about__container {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 2rem !important;
+}
+.about__img {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.about__stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)) !important;
+}
+@media screen and (min-width: 768px) {
+  .about__container {
+    grid-template-columns: minmax(300px, 1fr) 1.5fr !important;
+  }
+}
+
+/* 6. Skills Section Responsive */
+.skills__container {
+  grid-template-columns: 1fr !important;
+  gap: 2rem;
+}
+@media screen and (min-width: 768px) {
+  .skills__container {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  }
+}
+
+/* 7. Work / Projects Section Responsive */
+.timeline-container {
+  padding: 1rem 0 !important;
+}
+.timeline-row {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  margin-bottom: 2rem !important;
+  padding-left: 3rem !important;
+}
+.timeline-container::after {
+  left: 15px !important;
+  margin-left: 0 !important;
+}
+.timeline-icon {
+  left: 15px !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+.timeline-card {
+  width: 100% !important;
+}
+.timeline-row:nth-child(odd) .timeline-card::after,
+.timeline-row:nth-child(even) .timeline-card::after {
+  left: -10px !important;
+  right: auto !important;
+  border-right: 10px solid var(--card-bg) !important;
+  border-left: none !important;
+}
+
+@media screen and (min-width: 768px) {
+  .timeline-row {
+    flex-direction: row !important;
+    align-items: center !important;
+    padding-left: 0 !important;
+  }
+  .timeline-row:nth-child(even) {
+    justify-content: flex-end !important;
+  }
+  .timeline-container::after {
+    left: 50% !important;
+    margin-left: -2px !important;
+  }
+  .timeline-icon {
+    left: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .timeline-card {
+    width: calc(50% - 40px) !important;
+  }
+  .timeline-row:nth-child(odd) .timeline-card::after {
+    right: -10px !important;
+    left: auto !important;
+    border-left: 10px solid var(--card-bg) !important;
+    border-right: none !important;
+  }
+}
+
+.project-card-grid {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+}
+@media screen and (min-width: 768px) {
+  .project-card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+  }
+}
+
+/* 8. Fix Image overflows */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 9. Buttons responsive */
+.button {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  text-align: center;
+  white-space: nowrap;
+}
+/* Additional Responsive Fixes */
+@media screen and (max-width: 768px) {
+  .nav__menu {
+    right: -100%;
+    transition: 0.5s;
+    position: fixed;
+    top: var(--header-height);
+    background: var(--bg-color);
+    width: 80%;
+    height: 100%;
+    padding: 2rem;
+    box-shadow: -4px 0 15px var(--shadow-color);
+  }
+  .nav__menu.show {
+    right: 0;
+  }
+  .nav__toggle {
+    display: block;
+  }
+}
+/* My Learning Responsive */
+.learning-grid {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem;
+}
+@media screen and (min-width: 600px) {
+  .learning-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  }
+}
