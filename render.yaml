@@ -11,6 +11,8 @@ services:
         value: production
       - key: TRUST_PROXY_HOPS
         value: "1"
+      - key: FRONTEND_URL
+        value: https://moh-sadik.vercel.app
       - key: MONGODB_URI
         sync: false
       - key: ADMIN_USERNAME
@@ -28,6 +30,12 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: ADMIN_ALERT_EMAIL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: CLOUDINARY_URL
         sync: false
 
   - type: web

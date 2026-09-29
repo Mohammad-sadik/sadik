@@ -6,6 +6,7 @@ const Navbar = ({ menuOpen, setMenuOpen, activeSection, onNavLinkClick }) => {
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
+  const isLearning = location.pathname === '/learning'
   
   const handleLogoClick = (e) => {
     let clicks = JSON.parse(sessionStorage.getItem('adminClicks') || '[]')
@@ -41,7 +42,7 @@ const Navbar = ({ menuOpen, setMenuOpen, activeSection, onNavLinkClick }) => {
               </>
             )}
             <li className="nav__item">
-              <Link to="/learning" className={`nav__link ${!isHome ? 'active-link' : ''}`} onClick={onNavLinkClick}>
+              <Link to="/learning" className={`nav__link ${isLearning ? 'active-link' : ''}`} onClick={onNavLinkClick}>
                 Knowledge Hub
               </Link>
             </li>

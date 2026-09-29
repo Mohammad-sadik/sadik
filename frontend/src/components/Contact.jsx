@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react'
 import { motion } from 'framer-motion'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_URL } from '../config/api'
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -21,7 +21,7 @@ const Contact = () => {
         body: JSON.stringify(form)
       })
       if (res.ok) {
-        setStatus('Message sent successfully! ðŸš€')
+        setStatus('Message sent successfully!')
         setForm({ name: '', email: '', subject: '', message: '' })
       } else {
         setStatus('Failed to send message. Please try again.')

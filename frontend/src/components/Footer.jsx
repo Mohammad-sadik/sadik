@@ -1,24 +1,20 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 const Footer = () => {
   const [showScroll, setShowScroll] = useState(false)
-
-  const checkScrollTop = () => {
-    if (!showScroll && window.pageYOffset > 400) {
-      setShowScroll(true)
-    } else if (showScroll && window.pageYOffset <= 400) {
-      setShowScroll(false)
-    }
-  }
+  const { pathname } = useLocation()
+  const sectionHref = (section) => `${pathname === '/' ? '' : '/'}#${section}`
 
   const scrollTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   useEffect(() => {
+    const checkScrollTop = () => setShowScroll(window.pageYOffset > 400)
     window.addEventListener('scroll', checkScrollTop)
     return () => window.removeEventListener('scroll', checkScrollTop)
-  }, [showScroll])
+  }, [])
 
   return (
     <footer className="portfolio-footer">
@@ -37,13 +33,13 @@ const Footer = () => {
         <div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem', color: '#fff' }}>Quick Links</h3>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            <li><a href="#home" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Home</a></li>
-            <li><a href="#about" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> About</a></li>
-            <li><a href="#skills" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Skills</a></li>
-            <li><a href="#work" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Experience</a></li>
-            <li><a href="#work" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Work</a></li>
-            <li><a href="/learning" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> My Learning</a></li>
-            <li><a href="#contact" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Contact</a></li>
+            <li><a href={sectionHref('home')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Home</a></li>
+            <li><a href={sectionHref('about')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> About</a></li>
+            <li><a href={sectionHref('skills')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Skills</a></li>
+            <li><a href={sectionHref('work')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Experience</a></li>
+            <li><a href={sectionHref('work')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Work</a></li>
+            <li><Link to="/learning" style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> My Learning</Link></li>
+            <li><a href={sectionHref('contact')} style={{ color: '#8A8A93', transition: 'color 0.3s' }} onMouseOver={e => e.target.style.color = '#7C3AED'} onMouseOut={e => e.target.style.color = '#8A8A93'}><i className='bx bx-chevron-right' style={{ color: '#7C3AED' }}></i> Contact</a></li>
           </ul>
         </div>
 

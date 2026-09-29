@@ -23,7 +23,7 @@ const Timeline = () => {
   }, []);
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
+    <div id="main-content" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
       <style>{`
         .experience-wrapper {
           background-color: transparent;

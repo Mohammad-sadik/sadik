@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import Navbar from './components/Navbar'
 import Home from './components/Home'
@@ -8,16 +8,19 @@ import Skills from './components/Skills'
 import Work from './components/Work'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
-import Timeline from './components/Timeline'
-import MyLearning from './components/MyLearning'
-import Dashboard from './components/Dashboard'
-import Login from './components/Login'
 
-function MainLayout() {
+const Timeline = lazy(() => import('./components/Timeline'))
+const MyLearning = lazy(() => import('./components/MyLearning'))
+const Dashboard = lazy(() => import('./components/Dashboard'))
+const Login = lazy(() => import('./components/Login'))
+
+function SiteLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
+  const { pathname } = useLocation()
 
   useEffect(() => {
+    if (pathname !== '/') return undefined
     const handleScroll = () => {
       const sections = document.querySelectorAll('section[id]')
       const scrollY = window.pageYOffset
@@ -32,20 +35,28 @@ function MainLayout() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [pathname])
 
   return (
     <>
-      <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} activeSection={activeSection} onNavLinkClick={() => setMenuOpen(false)} />
-      <main className="l-main" id="main-content">
-        <Home />
-        <About />
-        <Skills />
-        <Work />
-        <Contact />
-      </main>
+      <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} activeSection={pathname === '/' ? activeSection : ''} onNavLinkClick={() => setMenuOpen(false)} />
+      <Suspense fallback={<main id="main-content" className="page-loading" role="status">Loading page…</main>}>
+        <Outlet />
+      </Suspense>
       <Footer />
     </>
+  )
+}
+
+function MainLayout() {
+  return (
+    <main className="l-main" id="main-content">
+      <Home />
+      <About />
+      <Skills />
+      <Work />
+      <Contact />
+    </main>
   )
 }
 
@@ -55,11 +66,13 @@ function App() {
       <Router>
         <RouteMeta />
         <Routes>
-          <Route path="/" element={<MainLayout />} />
-          <Route path="/timeline" element={<Timeline />} />
-          <Route path="/learning" element={<MyLearning />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
+          <Route element={<SiteLayout />}>
+            <Route path="/" element={<MainLayout />} />
+            <Route path="/timeline" element={<Timeline />} />
+            <Route path="/learning" element={<MyLearning />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/login" element={<Login />} />
+          </Route>
         </Routes>
       </Router>
     </ThemeProvider>

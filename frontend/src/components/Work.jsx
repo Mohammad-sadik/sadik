@@ -33,29 +33,6 @@ const Work = () => {
           margin-bottom: 1rem;
           color: var(--second-color);
         }
-        .experience-title {
-          text-align: center;
-          font-size: var(--h2-font-size);
-          font-weight: var(--font-semi);
-          color: var(--first-color);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 0.5rem;
-          margin-bottom: 2.5rem;
-          position: relative;
-        }
-        .experience-title::after {
-          position: absolute;
-          content: '';
-          width: 64px;
-          height: 0.18rem;
-          left: 0;
-          right: 0;
-          margin: auto;
-          bottom: -10px; top: auto;
-          background-color: var(--first-color);
-        }
         .timeline-container {
           position: relative;
           max-width: 900px;
@@ -175,8 +152,8 @@ const Work = () => {
         }
       `}</style>
 
+      <h2 className="section-title experience-section-title">Experience</h2>
       <div className="experience-wrapper bd-grid">
-        <h2 className="experience-title">Experience</h2>
         <div className="timeline-container">
           {displayedExperiences.map((exp, idx) => (
             <div className="timeline-row" key={idx}>
@@ -201,47 +178,36 @@ const Work = () => {
       </div>
 
       <h2 className="section-title featured-work-title">Featured Work</h2>
-      <div className="bd-grid project-card-grid">
-        
-        {/* ScrollMe */}
-        <div className="project-card" style={{ padding: '1.2rem', borderRadius: '0.5rem', border: '1px solid var(--card-border)', boxShadow: '0 4px 15px var(--shadow-color)', backgroundColor: 'var(--card-bg)' }}>
-          <h3 style={{ fontSize: '1.4rem', color: 'var(--title-color)', marginBottom: '0.2rem' }}>ScrollMe</h3>
-          <p style={{ fontWeight: '600', color: 'var(--first-color)', marginBottom: '0.75rem' }}>A Full-Stack Marketplace Platform</p>
-          <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>A marketplace platform connecting sellers, users, and creators through a complete digital shopping experience.</p>
-          <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>My Contributions</p>
-          <ul style={{ listStyleType: 'disc', marginLeft: '1.5rem', marginBottom: '1rem', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'var(--text-color)' }}>
-            <li>Developed and integrated backend APIs.</li>
-            <li>Worked on seller and admin portal features.</li>
-            <li>Implemented product uploading and product attributes.</li>
-            <li>Developed categories and dynamic categories.</li>
-            <li>Implemented coupons and offers.</li>
-            <li>Worked on payment integration and verification.</li>
-            <li>Implemented push notifications and notification grouping.</li>
-            <li>Worked on authentication and role-based access.</li>
-            <li>Worked on refund, return, and replacement workflows.</li>
-            <li>Integrated logistics services.</li>
-            <li>Fixed bugs and improved existing functionality.</li>
+      <div className="bd-grid project-card-grid featured-projects">
+        <article className="project-card featured-project featured-project--marketplace">
+          <div className="featured-project__topline"><span>01 / MARKETPLACE</span><i className="bx bx-store-alt" aria-hidden="true" /></div>
+          <h3>ScrollMe</h3>
+          <p className="featured-project__type">Full-stack marketplace platform</p>
+          <p className="featured-project__summary">A digital shopping experience connecting sellers, customers, and creators.</p>
+          <div className="featured-project__divider" />
+          <h4>What I worked on</h4>
+          <ul>
+            <li>Seller and admin tools for product and category management</li>
+            <li>Payments, offers, notifications, and role-based access</li>
+            <li>Returns, replacements, refunds, and logistics workflows</li>
           </ul>
-          <p style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--title-color)' }}>Technology: React, TypeScript, Tailwind CSS, React Native, FastAPI, PostgreSQL, AWS S3, Firebase</p>
-        </div>
+          <div className="featured-project__tags" aria-label="Technologies"><span>React</span><span>TypeScript</span><span>FastAPI</span><span>PostgreSQL</span><span>Firebase</span><span>Tailwind</span></div>
+        </article>
 
-        {/* WellWisher */}
-        <div className="project-card" style={{ padding: '1.2rem', borderRadius: '0.5rem', border: '1px solid var(--card-border)', boxShadow: '0 4px 15px var(--shadow-color)', backgroundColor: 'var(--card-bg)' }}>
-          <h3 style={{ fontSize: '1.4rem', color: 'var(--title-color)', marginBottom: '0.2rem' }}>WellWisher</h3>
-          <p style={{ fontWeight: '600', color: 'var(--first-color)', marginBottom: '0.75rem' }}>A Service-Based Application</p>
-          <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>Worked on backend services and application features for a service-based platform, with a focus on APIs, payments, notifications, and user workflows.</p>
-          <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>My Contributions</p>
-          <ul style={{ listStyleType: 'disc', marginLeft: '1.5rem', marginBottom: '1rem', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'var(--text-color)' }}>
-            <li>Developed backend logic and services.</li>
-            <li>Worked on payment integration and user verification.</li>
-            <li>Implemented booking and service workflows.</li>
-            <li>Integrated push notifications.</li>
-            <li>Worked on authentication.</li>
-            <li>Fixed issues across multiple feature areas.</li>
+        <article className="project-card featured-project featured-project--services">
+          <div className="featured-project__topline"><span>02 / SERVICES</span><i className="bx bx-layer" aria-hidden="true" /></div>
+          <h3>WellWisher</h3>
+          <p className="featured-project__type">Service-based application</p>
+          <p className="featured-project__summary">A service platform with booking, payment, and user verification flows.</p>
+          <div className="featured-project__divider" />
+          <h4>What I worked on</h4>
+          <ul>
+            <li>Backend services and API features</li>
+            <li>Booking flows, payment integration, and verification</li>
+            <li>Push notifications, authentication, and product fixes</li>
           </ul>
-          <p style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--title-color)' }}>Technology: React, Node.js, Express.js, PostgreSQL, Redux, React Native</p>
-        </div>
-        
+          <div className="featured-project__tags" aria-label="Technologies"><span>React</span><span>TypeScript</span><span>Django</span><span>PostgreSQL</span><span>Firebase</span><span>Tailwind</span></div>
+        </article>
       </div>
     </section>
   );

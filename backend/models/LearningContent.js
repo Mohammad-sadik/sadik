@@ -9,7 +9,9 @@ const learningContentSchema = new mongoose.Schema({
         body: { type: String, required: true },
         order: { type: Number, default: 0 }
     }],
-    pdf_file: { type: String, default: null }, // URL/path to PDF
+    pdf_file: { type: String, default: null }, // Legacy field; stores the uploaded Cloudinary URL
+    media_type: { type: String, default: null },
+    media_name: { type: String, default: null },
     createdAt: { type: Date, default: Date.now }
 });
 

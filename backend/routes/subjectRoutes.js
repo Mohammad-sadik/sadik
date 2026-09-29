@@ -5,13 +5,66 @@ const Subject = require('../models/Subject');
 const LearningContent = require('../models/LearningContent');
 const auth = require('../middleware/auth'); // Add auth middleware
 
-// Set up multer for PDF uploads (local storage for dev)
-// In production on Vercel, you'd use something like Cloudinary or AWS S3
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Automatically configure using CLOUDINARY_URL from .env
+cloudinary.config();
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'portfolio_pdfs',
+        allowed_formats: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'txt', 'md', 'jpg', 'jpeg', 'png', 'webp', 'gif'],
+        resource_type: 'auto'
+    }
 });
-const upload = multer({ storage });
+const allowedFiles = new Map([
+    ['pdf', new Set(['application/pdf'])],
+    ['doc', new Set(['application/msword', 'application/octet-stream'])],
+    ['docx', new Set(['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/octet-stream'])],
+    ['ppt', new Set(['application/vnd.ms-powerpoint', 'application/octet-stream'])],
+    ['pptx', new Set(['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/octet-stream'])],
+    ['xls', new Set(['application/vnd.ms-excel', 'application/octet-stream'])],
+    ['xlsx', new Set(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream'])],
+    ['csv', new Set(['text/csv', 'application/vnd.ms-excel', 'application/octet-stream'])],
+    ['txt', new Set(['text/plain', 'application/octet-stream'])],
+    ['md', new Set(['text/markdown', 'text/plain', 'application/octet-stream'])],
+    ['jpg', new Set(['image/jpeg'])], ['jpeg', new Set(['image/jpeg'])],
+    ['png', new Set(['image/png'])], ['webp', new Set(['image/webp'])], ['gif', new Set(['image/gif'])]
+]);
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+    fileFilter: (req, file, callback) => {
+        if (!['file', 'pdf'].includes(file.fieldname)) return callback(new Error('Use the file upload field.'));
+        const extension = file.originalname.split('.').pop()?.toLowerCase();
+        const mimeTypes = allowedFiles.get(extension);
+        if (!mimeTypes || !mimeTypes.has(file.mimetype)) return callback(new Error('Unsupported file type.'));
+        callback(null, true);
+    }
+});
+const parseContentUpload = upload.fields([{ name: 'file', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]);
+function uploadContentFile(req, res, next) {
+    parseContentUpload(req, res, error => {
+        if (!error) {
+            if (req.files?.file?.length && req.files?.pdf?.length) return res.status(400).json({ error: 'Upload only one attachment.' });
+            return next();
+        }
+        const tooLarge = error.code === 'LIMIT_FILE_SIZE';
+        return res.status(tooLarge ? 413 : 400).json({ error: tooLarge ? 'Files must be 10 MB or smaller.' : error.message });
+    });
+}
+
+function uploadedContentFile(req) {
+    return req.files?.file?.[0] || req.files?.pdf?.[0] || null;
+}
+
+function contentAttachment(content) {
+    if (!content.pdf_file) return { url: null, type: null, name: null };
+    const url = /^https?:\/\//i.test(content.pdf_file) ? content.pdf_file : `/uploads/${content.pdf_file}`;
+    return { url, type: content.media_type || null, name: content.media_name || null };
+}
 
 // --- SUBJECT ROUTES ---
 
@@ -28,7 +81,8 @@ router.get('/subjects', async (req, res) => {
         }));
         res.json(formatted);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Unable to list subjects:', err.message);
+        res.status(503).json({ error: 'Subjects are temporarily unavailable.' });
     }
 });
 
@@ -53,12 +107,15 @@ router.get('/subjects/:id', async (req, res) => {
                     body: section.body,
                     order: section.order
                 })),
-                pdf_file: c.pdf_file ? `/uploads/${c.pdf_file}` : null,
+                pdf_file: contentAttachment(c).url,
+                media_type: c.media_type || null,
+                media_name: c.media_name || null,
                 created_at: c.createdAt
             }))
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Unable to load subject:', err.message);
+        res.status(503).json({ error: 'Subject content is temporarily unavailable.' });
     }
 });
 
@@ -69,22 +126,26 @@ router.post('/subjects', auth, async (req, res) => {
         await subject.save();
         res.status(201).json(subject);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error('Unable to create subject:', err.message);
+        res.status(400).json({ error: 'Unable to create subject. Check the title and description.' });
     }
 });
 
 // --- CONTENT ROUTES ---
 
 // Create content (Protected)
-router.post('/subjects/:id/contents', auth, upload.single('pdf'), async (req, res) => {
+router.post('/subjects/:id/contents', auth, uploadContentFile, async (req, res) => {
     try {
+        const file = uploadedContentFile(req);
         const sections = req.body.sections ? JSON.parse(req.body.sections) : [];
         const content = new LearningContent({
             subject: req.params.id,
             title: req.body.title,
             body: req.body.body,
             sections: sections.map((section, order) => ({ title: section.title, body: section.body, order })),
-            pdf_file: req.file ? req.file.filename : null
+            pdf_file: file ? file.path : null,
+            media_type: file ? file.mimetype : null,
+            media_name: file ? file.originalname : null
         });
         await content.save();
         res.status(201).json({
@@ -92,22 +153,30 @@ router.post('/subjects/:id/contents', auth, upload.single('pdf'), async (req, re
             title: content.title,
             body: content.body,
             sections: content.sections,
-            pdf_file: content.pdf_file ? `/uploads/${content.pdf_file}` : null
+            pdf_file: contentAttachment(content).url,
+            media_type: content.media_type,
+            media_name: content.media_name
         });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error('Unable to save content:', err.message);
+        res.status(400).json({ error: 'Unable to save content. Check the title, text, and attachment.' });
     }
 });
 
 // Update an article and its ordered Knowledge Hub sections (Protected)
-router.put('/contents/:id', auth, upload.single('pdf'), async (req, res) => {
+router.put('/contents/:id', auth, uploadContentFile, async (req, res) => {
     try {
+        const file = uploadedContentFile(req);
         const updates = { title: req.body.title, body: req.body.body };
         if (req.body.sections !== undefined) {
             const sections = JSON.parse(req.body.sections);
             updates.sections = sections.map((section, order) => ({ title: section.title, body: section.body, order }));
         }
-        if (req.file) updates.pdf_file = req.file.filename;
+        if (file) {
+            updates.pdf_file = file.path;
+            updates.media_type = file.mimetype;
+            updates.media_name = file.originalname;
+        }
 
         const content = await LearningContent.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
         if (!content) return res.status(404).json({ error: 'Content not found.' });
@@ -116,10 +185,13 @@ router.put('/contents/:id', auth, upload.single('pdf'), async (req, res) => {
             title: content.title,
             body: content.body,
             sections: content.sections,
-            pdf_file: content.pdf_file ? `/uploads/${content.pdf_file}` : null
+            pdf_file: contentAttachment(content).url,
+            media_type: content.media_type,
+            media_name: content.media_name
         });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error('Unable to update content:', err.message);
+        res.status(400).json({ error: 'Unable to update content. Check the title, text, and attachment.' });
     }
 });
 
@@ -130,7 +202,8 @@ router.delete('/subjects/:id', auth, async (req, res) => {
         await Subject.findByIdAndDelete(req.params.id);
         res.json({ message: 'Subject and contents deleted successfully' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Unable to delete subject:', err.message);
+        res.status(500).json({ error: 'Unable to delete subject right now.' });
     }
 });
 
@@ -140,7 +213,8 @@ router.delete('/contents/:id', auth, async (req, res) => {
         await LearningContent.findByIdAndDelete(req.params.id);
         res.json({ message: 'Content deleted successfully' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Unable to delete content:', err.message);
+        res.status(500).json({ error: 'Unable to delete content right now.' });
     }
 });
 

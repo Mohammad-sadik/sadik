@@ -2,11 +2,35 @@ import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { ArrowLeft, ArrowRight, BookOpen, FileText, Search } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Clock3, FileText, Search } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+import { API_URL, SERVER_URL } from '../config/api'
 const ARTICLES_PER_PAGE = 6
+
+function formatEntryDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(date)
+}
+
+function estimateReadMinutes(content) {
+  const words = [content.body, ...(content.sections || []).map(section => section.body)]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length
+  return Math.max(1, Math.ceil(words / 200))
+}
+
+function getAttachmentUrl(file) {
+  return /^https?:\/\//i.test(file) ? file : `${SERVER_URL}${file}`
+}
+
+function isImageAttachment(content) {
+  return content.media_type?.startsWith('image/') || /\.(avif|gif|jpe?g|png|webp)(?:[?#].*)?$/i.test(content.pdf_file || '')
+}
 
 const MyLearning = () => {
   const [subjects, setSubjects] = useState([])
@@ -71,7 +95,7 @@ const MyLearning = () => {
   }
 
   return (
-    <main className="knowledge-page">
+    <main id="main-content" className="knowledge-page">
       <div className="knowledge-shell">
         <Link to="/" className="knowledge-back-link"><ArrowLeft size={17} /> Back to portfolio</Link>
 
@@ -121,22 +145,37 @@ const MyLearning = () => {
           {!loading && !loadingSubject && activeSubject && visibleContents.length > 0 && (
             <div className="knowledge-article-grid">
               {visibleContents.map(content => (
-                <article className="knowledge-article" key={content.id}>
-                  <div className="knowledge-article__topline"><FileText size={18} /><span>Note</span></div>
-                  <h3>{content.title}</h3>
-                  <div className="knowledge-markdown"><ReactMarkdown>{content.body}</ReactMarkdown></div>
+                <article className="knowledge-entry" key={content.id}>
+                  <header className="knowledge-entry__header">
+                    <div className="knowledge-entry__meta">
+                      <span className="knowledge-entry__kind"><FileText size={15} /> Learning note</span>
+                      {formatEntryDate(content.created_at) && (
+                        <span><CalendarDays size={15} /> {formatEntryDate(content.created_at)}</span>
+                      )}
+                      <span><Clock3 size={15} /> {estimateReadMinutes(content)} min read</span>
+                    </div>
+                    <h3>{content.title}</h3>
+                  </header>
+                  {content.body && <div className="knowledge-markdown knowledge-entry__body"><ReactMarkdown>{content.body}</ReactMarkdown></div>}
                   {content.sections?.length > 0 && (
-                    <div className="knowledge-subsections">
-                      <p className="knowledge-subsections__label">In this note</p>
+                    <div className="knowledge-entry__sections">
                       {content.sections.map((section, index) => (
-                        <details className="knowledge-subsection" key={`${content.id}-${index}`}>
-                          <summary>{section.title}</summary>
+                        <section className="knowledge-entry__section" key={`${content.id}-${index}`}>
+                          <p className="knowledge-entry__section-index">Section {String(index + 1).padStart(2, '0')}</p>
+                          <h4>{section.title}</h4>
                           <div className="knowledge-markdown"><ReactMarkdown>{section.body}</ReactMarkdown></div>
-                        </details>
+                        </section>
                       ))}
                     </div>
                   )}
-                  {content.pdf_file && <a className="knowledge-pdf-link" href={`${SERVER_URL}${content.pdf_file}`} target="_blank" rel="noreferrer">Open attached PDF <ArrowRight size={16} /></a>}
+                  {content.pdf_file && (isImageAttachment(content) ? (
+                    <a className="knowledge-image-attachment" href={getAttachmentUrl(content.pdf_file)} target="_blank" rel="noreferrer" aria-label={`Open image attachment ${content.media_name || content.title}`}>
+                      <img src={getAttachmentUrl(content.pdf_file)} alt={content.media_name || `Image for ${content.title}`} loading="lazy" />
+                      <span>{content.media_name || 'Open image'} <ArrowRight size={16} /></span>
+                    </a>
+                  ) : (
+                    <a className="knowledge-pdf-link" href={getAttachmentUrl(content.pdf_file)} target="_blank" rel="noreferrer"><FileText size={16} /> {content.media_name || 'Open attached file'} <ArrowRight size={16} /></a>
+                  ))}
                 </article>
               ))}
             </div>

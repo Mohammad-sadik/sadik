@@ -3,8 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+import { API_URL, SERVER_URL } from '../config/api'
 
 const SubjectDetail = () => {
   const { id } = useParams()
@@ -41,8 +40,8 @@ const SubjectDetail = () => {
                 <ReactMarkdown>{content.body}</ReactMarkdown>
               </div>
               {content.pdf_file && (
-                <a href={`${SERVER_URL}${content.pdf_file}`} target="_blank" rel="noreferrer" className="button" style={{marginTop: '1rem'}}>
-                  <i className='bx bxs-file-pdf'></i> Download PDF
+                <a href={/^https?:\/\//i.test(content.pdf_file) ? content.pdf_file : `${SERVER_URL}${content.pdf_file}`} target="_blank" rel="noreferrer" className="button" style={{marginTop: '1rem'}}>
+                  <i className={content.media_type?.startsWith('image/') ? 'bx bx-image' : 'bx bx-paperclip'}></i> {content.media_name || 'Open attachment'}
                 </a>
               )}
             </div>
@@ -56,4 +55,3 @@ const SubjectDetail = () => {
 }
 
 export default SubjectDetail
-

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import Navbar from './Navbar'
 import AdminSessionsManager from './AdminSessionsManager'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_URL } from '../config/api'
 
 const Dashboard = () => {
-  const [menuOpen, setMenuOpen] = useState(false)
   const [subjects, setSubjects] = useState([])
   const [status, setStatus] = useState({ type: '', message: '' })
 
@@ -21,7 +19,8 @@ const Dashboard = () => {
   const [contentBody, setContentBody] = useState('')
   const [contentSections, setContentSections] = useState([])
   const [editingContentId, setEditingContentId] = useState(null)
-  const [pdfFile, setPdfFile] = useState(null)
+  const [attachment, setAttachment] = useState(null)
+  const [existingAttachment, setExistingAttachment] = useState(null)
 
   const fetchSubjects = async () => {
     try {
@@ -104,8 +103,8 @@ const Dashboard = () => {
     formData.append('title', contentTitle)
     formData.append('body', contentBody)
     formData.append('sections', JSON.stringify(contentSections.filter(section => section.title.trim() && section.body.trim())))
-    if (pdfFile) {
-      formData.append('pdf', pdfFile)
+    if (attachment) {
+      formData.append('file', attachment)
     }
 
     try {
@@ -121,7 +120,8 @@ const Dashboard = () => {
       setContentTitle('')
       setContentBody('')
       setContentSections([])
-      setPdfFile(null)
+      setAttachment(null)
+      setExistingAttachment(null)
       setEditingContentId(null)
       e.target.reset() // reset file input
       if (manageSubjectId) {
@@ -140,6 +140,7 @@ const Dashboard = () => {
     setContentTitle(content.title)
     setContentBody(content.body)
     setContentSections(content.sections || [])
+    setExistingAttachment(content.pdf_file ? { url: content.pdf_file, name: content.media_name, type: content.media_type } : null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -148,7 +149,8 @@ const Dashboard = () => {
     setContentTitle('')
     setContentBody('')
     setContentSections([])
-    setPdfFile(null)
+    setAttachment(null)
+    setExistingAttachment(null)
   }
 
   const handleDeleteSubject = async () => {
@@ -176,22 +178,37 @@ const Dashboard = () => {
   }
 
   return (
-    <>
-      <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} activeSection="" onNavLinkClick={() => setMenuOpen(false)} />
-      <main id="main-content" className="l-main" style={{ paddingTop: '80px' }}>
-        <section className="section bd-grid">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 className="section-title" style={{ margin: 0 }}>Admin Dashboard</h2>
-            <button
-              className="button"
-              style={{ padding: '0.5rem 1rem' }}
-              onClick={handleLogout}
-            >
-              Logout
+      <main id="main-content" className="l-main">
+        <section className="section dashboard-page">
+          <div className="dashboard-shell">
+          <header className="dashboard-hero">
+            <div>
+              <p className="dashboard-eyebrow"><i className="bx bx-shield-quarter" aria-hidden="true" /> PRIVATE WORKSPACE</p>
+              <h1>Admin dashboard</h1>
+              <p className="dashboard-hero__description">Create learning notes, organize your Knowledge Hub, and manage signed-in devices.</p>
+            </div>
+            <button className="button button-outline dashboard-logout" onClick={handleLogout}>
+              <i className="bx bx-log-out" aria-hidden="true" /> Sign out
             </button>
+          </header>
+
+          <div className="dashboard-overview">
+            <div className="dashboard-overview__metric">
+              <span className="dashboard-overview__icon"><i className="bx bx-book-open" aria-hidden="true" /></span>
+              <div><strong>{subjects.length}</strong><span>{subjects.length === 1 ? 'subject' : 'subjects'} in your hub</span></div>
+            </div>
+            <div className="dashboard-overview__hint">
+              <strong>What would you like to do?</strong>
+              <span>Choose an action to jump to the right section.</span>
+            </div>
           </div>
-          
-          <br/>
+
+          <nav className="dashboard-shortcuts" aria-label="Dashboard sections">
+            <a href="#create-subject"><i className="bx bx-plus-circle" aria-hidden="true" /> Create a subject</a>
+            <a href="#post-content"><i className="bx bx-edit" aria-hidden="true" /> Write a learning note</a>
+            <a href="#manage-data"><i className="bx bx-folder-open" aria-hidden="true" /> Manage content</a>
+            <a href="#sessions"><i className="bx bx-devices" aria-hidden="true" /> Signed-in devices</a>
+          </nav>
           
           {status.message && (
             <div className={`status-msg ${status.type}`}>
@@ -201,20 +218,23 @@ const Dashboard = () => {
 
           <div className="dashboard__container">
             {/* --- CREATE SUBJECT FORM --- */}
-            <div className="dashboard__card">
-              <h3>1. Create a New Subject</h3>
-              <p>e.g., "System Design", "HTML", "Data Structures"</p>
+            <section id="create-subject" className="dashboard__card" aria-labelledby="create-subject-title">
+              <div className="dashboard-card__heading"><span className="dashboard-card__step">01</span><h2 id="create-subject-title">Create a subject</h2><p>Start a new topic in your learning library.</p></div>
               <form onSubmit={handleSubjectSubmit} className="dashboard__form">
+                <label htmlFor="subject-title">Subject title</label>
                 <input 
+                  id="subject-title"
                   type="text" 
-                  placeholder="Subject Title" 
+                  placeholder="e.g. System Design" 
                   className="contact__input" 
                   value={subjectTitle}
                   onChange={(e) => setSubjectTitle(e.target.value)}
                   required
                 />
+                <label htmlFor="subject-description">Short description <span>(optional)</span></label>
                 <textarea 
-                  placeholder="Short Description" 
+                  id="subject-description"
+                  placeholder="What will you learn in this subject?" 
                   className="contact__input" 
                   cols="0" rows="3"
                   value={subjectDesc}
@@ -222,14 +242,15 @@ const Dashboard = () => {
                 ></textarea>
                 <button type="submit" className="button">Create Subject</button>
               </form>
-            </div>
+            </section>
 
             {/* --- CREATE CONTENT FORM --- */}
-            <div className="dashboard__card">
-              <h3>2. {editingContentId ? 'Edit Learning Content' : 'Post Learning Content'}</h3>
-              <p>Add a main note, ordered sub-sections, and an optional PDF.</p>
+            <section id="post-content" className="dashboard__card dashboard-content-card" aria-labelledby="post-content-title">
+              <div className="dashboard-card__heading"><span className="dashboard-card__step">02</span><h2 id="post-content-title">{editingContentId ? 'Edit learning note' : 'Write a learning note'}</h2><p>Add a clear title, your notes, optional sections, and an image or file.</p></div>
               <form onSubmit={handleContentSubmit} className="dashboard__form">
+                <label htmlFor="content-subject">Subject</label>
                 <select 
+                  id="content-subject"
                   className="contact__input" 
                   value={selectedSubject} 
                   onChange={(e) => setSelectedSubject(e.target.value)}
@@ -241,17 +262,21 @@ const Dashboard = () => {
                   ))}
                 </select>
 
+                <label htmlFor="content-title">Note title</label>
                 <input 
+                  id="content-title"
                   type="text" 
-                  placeholder="Content Title (e.g. Chapter 1)" 
+                  placeholder="e.g. How HTTP requests work" 
                   className="contact__input" 
                   value={contentTitle}
                   onChange={(e) => setContentTitle(e.target.value)}
                   required
                 />
 
+                <label htmlFor="content-body">Your notes <span>Markdown supported</span></label>
                 <textarea 
-                  placeholder="Write your content in Markdown here..." 
+                  id="content-body"
+                  placeholder="Write what you learned today…" 
                   className="contact__input" 
                   cols="0" rows="6"
                   value={contentBody}
@@ -294,14 +319,22 @@ const Dashboard = () => {
                 </div>
 
                 <div className="file-upload">
-                  <label>Attach PDF (Optional):</label>
+                  <label htmlFor="content-pdf">Add an attachment <span>(optional)</span></label>
+                  <p>Images, PDF, Word, PowerPoint, Excel, CSV, text, or Markdown · up to 10 MB</p>
+                  {existingAttachment && !attachment && <div className="dashboard-current-attachment">
+                    <i className={existingAttachment.type?.startsWith('image/') ? 'bx bx-image' : 'bx bx-paperclip'} aria-hidden="true" />
+                    <a href={existingAttachment.url} target="_blank" rel="noreferrer">{existingAttachment.name || 'View current attachment'}</a>
+                    <span>Current file · upload another to replace it</span>
+                  </div>}
                   <input 
+                    id="content-pdf"
                     type="file" 
-                    accept="application/pdf"
+                    accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md"
                     className="contact__input"
                     style={{padding: '0.5rem'}}
-                    onChange={(e) => setPdfFile(e.target.files[0])}
+                    onChange={(e) => setAttachment(e.target.files[0] || null)}
                   />
+                  {attachment && <p className="dashboard-file-selected"><i className="bx bx-check-circle" aria-hidden="true" /> Selected: {attachment.name}</p>}
                 </div>
 
                 <div className="dashboard-form-actions">
@@ -309,14 +342,15 @@ const Dashboard = () => {
                   {editingContentId && <button type="button" className="button button-outline" onClick={cancelContentEdit}>Cancel</button>}
                 </div>
               </form>
-            </div>
+            </section>
 
             {/* --- MANAGE / DELETE DATA --- */}
-            <div className="dashboard__card">
-              <h3>3. Manage Data</h3>
-              <p>Delete subjects or specific content.</p>
+            <section id="manage-data" className="dashboard__card" aria-labelledby="manage-data-title">
+              <div className="dashboard-card__heading"><span className="dashboard-card__step">03</span><h2 id="manage-data-title">Manage your content</h2><p>Review, edit, or remove subjects and notes.</p></div>
               <div className="dashboard__form">
+                <label htmlFor="manage-subject">Choose a subject</label>
                 <select 
+                  id="manage-subject"
                   className="contact__input" 
                   value={manageSubjectId} 
                   onChange={(e) => setManageSubjectId(e.target.value)}
@@ -337,8 +371,8 @@ const Dashboard = () => {
                       Delete Entire Subject
                     </button>
 
-                    <h4 style={{ color: 'var(--first-color)', marginBottom: '1rem' }}>Content inside this Subject:</h4>
-                    {contentsToManage.length === 0 ? <p>No content found.</p> : (
+                    <h3 className="dashboard-manage-heading">Notes in this subject</h3>
+                    {contentsToManage.length === 0 ? <p className="dashboard-empty-state">No notes yet. Write the first one above.</p> : (
                       <ul style={{ listStyleType: 'none', padding: 0 }}>
                         {contentsToManage.map(c => (
                           <li key={c.id} className="dashboard-content-row">
@@ -354,13 +388,13 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           </div>
 
-          <AdminSessionsManager />
+          <div id="sessions"><AdminSessionsManager /></div>
+          </div>
         </section>
       </main>
-    </>
   )
 }
 
