@@ -92,7 +92,8 @@ router.get('/subjects/:id', async (req, res) => {
         const subject = await Subject.findById(req.params.id);
         if (!subject) return res.status(404).json({ error: 'Subject not found' });
         
-        const contents = await LearningContent.find({ subject: subject._id }).sort({ createdAt: -1 });
+        // Keep older notes first so newly added notes append to the end of the list and flow onto later pages.
+        const contents = await LearningContent.find({ subject: subject._id }).sort({ createdAt: 1, _id: 1 });
         
         res.json({
             id: subject._id,
