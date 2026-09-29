@@ -71,6 +71,14 @@ router.get('/status', async (req, res) => {
     }
 });
 
+router.get('/session-status', auth.withoutActivity, (req, res) => {
+    res.json({ active: true });
+});
+
+router.post('/activity', auth, (req, res) => {
+    res.json({ active: true });
+});
+
 router.post('/login', async (req, res) => {
     const ip = getClientIp(req);
     const now = new Date();
@@ -215,7 +223,12 @@ router.post('/verify-pin', async (req, res) => {
 router.get('/sessions', auth, async (req, res) => {
     try {
         const now = new Date();
-        const sessions = await AdminSession.find({ revokedAt: null, expiresAt: { $gt: now } })
+        const idleCutoff = new Date(now.getTime() - 10 * 60 * 60 * 1000);
+        const sessions = await AdminSession.find({
+            revokedAt: null,
+            expiresAt: { $gt: now },
+            lastActiveAt: { $gt: idleCutoff }
+        })
             .sort({ lastActiveAt: -1 })
             .select('username ip device createdAt lastActiveAt expiresAt');
         res.json(sessions.map(session => ({

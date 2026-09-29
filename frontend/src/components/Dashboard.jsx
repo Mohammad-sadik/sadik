@@ -36,6 +36,46 @@ const Dashboard = () => {
   const token = localStorage.getItem('adminToken')
 
   useEffect(() => {
+    if (!token) return
+
+    let active = true
+    let lastActivityPing = Date.now()
+    const headers = { Authorization: `Bearer ${token}` }
+    const endSession = () => {
+      localStorage.removeItem('adminToken')
+      if (active) navigate('/login', { replace: true })
+    }
+    const checkSession = async () => {
+      try {
+        await axios.get(`${API_URL}/auth/session-status`, { headers })
+      } catch (err) {
+        if (err.response?.status === 401) endSession()
+      }
+    }
+    const recordActivity = async () => {
+      const now = Date.now()
+      if (document.visibilityState === 'hidden' || now - lastActivityPing < 5 * 60 * 1000) return
+      lastActivityPing = now
+      try {
+        await axios.post(`${API_URL}/auth/activity`, {}, { headers })
+      } catch (err) {
+        if (err.response?.status === 401) endSession()
+      }
+    }
+
+    checkSession()
+    const sessionCheckInterval = window.setInterval(checkSession, 60 * 1000)
+    const activityEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart']
+    activityEvents.forEach(eventName => window.addEventListener(eventName, recordActivity, { passive: true }))
+
+    return () => {
+      active = false
+      window.clearInterval(sessionCheckInterval)
+      activityEvents.forEach(eventName => window.removeEventListener(eventName, recordActivity))
+    }
+  }, [navigate, token])
+
+  useEffect(() => {
     if (!token) {
       navigate('/login')
     } else {
