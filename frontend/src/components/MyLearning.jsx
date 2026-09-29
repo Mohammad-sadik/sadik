@@ -192,7 +192,7 @@ const MyLearning = () => {
           {pageCount > 1 && (
             <nav className="knowledge-pagination" aria-label="Notes pagination">
               <button type="button" className="button button-outline" disabled={currentPage === 1} onClick={() => setCurrentPage(page => Math.max(1, page - 1))}><ArrowLeft size={16} /> Previous</button>
-              <span>Page {currentPage} of {pageCount}</span>
+              <span aria-live="polite"><strong>{activeSubject.title}</strong> · Page {currentPage} of {pageCount}</span>
               <button type="button" className="button button-outline" disabled={currentPage === pageCount} onClick={() => setCurrentPage(page => Math.min(pageCount, page + 1))}>Next <ArrowRight size={16} /></button>
             </nav>
           )}
